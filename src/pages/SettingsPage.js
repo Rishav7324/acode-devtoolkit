@@ -3,6 +3,7 @@ import { Toggle } from '../ui/Toggle.js';
 import { SettingsItem } from '../ui/SettingsItem.js';
 import { Toast } from '../ui/Toast.js';
 import { PLUGIN_NAME, PLUGIN_ID } from '../utils/constants.js';
+import plugin from '../../plugin.json';
 
 export function SettingsPage({ services }) {
   const page = tag('div', { className: 'dtk-settings-page' });
@@ -62,14 +63,14 @@ export function SettingsPage({ services }) {
     SettingsItem({
       icon: '\u2139',
       title: PLUGIN_NAME,
-      description: 'Version 0.1.0',
+      description: `Version ${plugin.version}`,
     }),
     SettingsItem({
       icon: '\u{1f517}',
       title: 'Open Source',
       description: 'MIT License on GitHub',
       onClick: () => {
-        Toast({ message: 'Source: github.com/anomalyco/acode-devtoolkit', type: 'info' });
+        Toast({ message: 'Source: github.com/Rishav7324/acode-devtoolkit', type: 'info' });
       },
     }),
   ]);

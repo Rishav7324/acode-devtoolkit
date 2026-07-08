@@ -1,4 +1,3 @@
-import { PLUGIN_ID } from '../utils/constants.js';
 import { logger } from '../utils/logger.js';
 
 const DEFAULTS = {
@@ -28,8 +27,7 @@ export class ConfigManager {
     const urlParams = new URLSearchParams(window.location.search);
     const isDev = urlParams.get('dev') === '1' ||
       window.location.hostname === 'localhost' ||
-      window.location.hostname === '127.0.0.1' ||
-      process.env?.NODE_ENV === 'development';
+      window.location.hostname === '127.0.0.1';
     this._config.env = isDev ? 'development' : 'production';
     if (isDev) {
       this._config.logLevel = 'debug';

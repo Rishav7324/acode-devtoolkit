@@ -13,7 +13,9 @@ import {
   ActionRegistry,
   SearchRegistry,
   PermissionRegistry,
+  ToolRegistry,
 } from '../registries/index.js';
+import { TOOL_CATEGORIES, seedTools } from '../data/tools.js';
 import { moduleDescriptors } from '../modules/index.js';
 import { COMMAND_PREFIX } from '../utils/constants.js';
 import { logger } from '../utils/logger.js';
@@ -40,6 +42,7 @@ export class Plugin {
       actions: new ActionRegistry(),
       search: new SearchRegistry(),
       permissions: new PermissionRegistry(),
+      tools: new ToolRegistry(TOOL_CATEGORIES),
     };
   }
 
@@ -48,6 +51,8 @@ export class Plugin {
 
     this.baseUrl = baseUrl;
     this.$page = $page;
+
+    seedTools(this._registries.tools);
 
     await this.kernel.boot({
       modules: false,
@@ -82,26 +87,7 @@ export class Plugin {
     });
   }
 
-  _createToolLauncher() {
-    const registry = new Map();
-    return {
-      register(toolId, launchFn) {
-        registry.set(toolId, launchFn);
-      },
-      launch(toolId) {
-        const fn = registry.get(toolId);
-        if (fn) {
-          fn();
-        } else {
-          logger.warn(`Tool "${toolId}" not registered`);
-        }
-      },
-    };
-  }
-
   async _loadModules() {
-    const toolLauncher = this._createToolLauncher();
-
     const moduleContext = {
       ...this.kernel._createModuleContext(),
       baseUrl: this.baseUrl,
@@ -112,7 +98,7 @@ export class Plugin {
         notifications: this.kernel.container.get('notifications'),
       },
       registries: this._registries,
-      toolLauncher,
+      toolRegistry: this._registries.tools,
     };
 
     const mm = this.kernel.getModuleManager();
@@ -148,6 +134,7 @@ export class Plugin {
         notifications: this.kernel.container.get('notifications'),
       },
       registries: this._registries,
+      toolRegistry: this._registries.tools,
     };
 
     await mm.enable(record.id, moduleContext);
@@ -168,6 +155,7 @@ export class Plugin {
     this._registries.actions.clear();
     this._registries.search.clear();
     this._registries.permissions.clear();
+    this._registries.tools.clear();
     this._initialized = false;
 
     await this.kernel.destroy();

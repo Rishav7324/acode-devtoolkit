@@ -3,7 +3,6 @@ import tag from 'html-tag-js';
 export function Modal({ title, body, footer, onClose }) {
   const close = () => {
     overlay.remove();
-    modal.remove();
     if (onClose) onClose();
   };
 

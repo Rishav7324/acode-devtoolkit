@@ -7,3 +7,4 @@ export { ServiceRegistry } from './ServiceRegistry.js';
 export { ActionRegistry } from './ActionRegistry.js';
 export { SearchRegistry } from './SearchRegistry.js';
 export { PermissionRegistry } from './PermissionRegistry.js';
+export { ToolRegistry } from './ToolRegistry.js';

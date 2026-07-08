@@ -3,7 +3,7 @@
   "id": "com.devtoolkit.plugin",
   "name": "Acode DevToolkit",
   "main": "main.js",
-  "version": "0.6.1",
+  "version": "0.8.0",
   "readme": "readme.md",
   "icon": "icon.png",
   "files": [],
@@ -18,18 +18,19 @@
     "utility"
   ],
   "changelogs": "changelog.md",
-  "repository": "https://github.com/anomalyco/acode-devtoolkit",
+  "supported_editor": "all",
+  "repository": "https://github.com/Rishav7324/acode-devtoolkit",
   "author": {
-    "name": "Acode DevToolkit Contributors",
-    "email": "",
-    "url": "https://github.com/anomalyco/acode-devtoolkit",
-    "github": "anomalyco"
+    "name": "Rishav Raj",
+    "email": "rishavraj74883@gmail.com",
+    "url": "https://github.com/Rishav7324/acode-devtoolkit",
+    "github": "Rishav7324"
   },
   "contributors": [
     {
-      "name": "Acode DevToolkit Contributors",
+      "name": "Rishav Raj",
       "role": "Developer",
-      "github": "anomalyco"
+      "github": "Rishav7324"
     }
   ]
 }

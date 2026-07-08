@@ -24,12 +24,13 @@ export default {
 
   async startup(context) {
     this._context = context;
-    const { services, registries, config, errorHandler, toolLauncher } = context;
+    const { services, registries, config, errorHandler, toolRegistry } = context;
 
     const homeEl = HomePage({
+      toolRegistry,
       onLaunchTool: (tool) => {
-        if (toolLauncher) {
-          toolLauncher.launch(tool.id);
+        if (toolRegistry.hasLaunchHandler(tool.id)) {
+          toolRegistry.launch(tool.id);
         } else {
           Toast({ message: `${tool.title} \u2014 coming soon`, type: 'info' });
         }

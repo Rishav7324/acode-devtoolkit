@@ -1,0 +1,101 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  validate:
+    name: Validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: TypeScript Check
+        run: npm run typecheck
+
+      - name: Static Analysis
+        run: node scripts/validate.mjs
+
+      - name: Quality Score
+        run: node scripts/quality-gate.mjs
+
+  release:
+    name: Release
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Verify Build
+        run: |
+          test -f plugin.zip || { echo "plugin.zip not found"; exit 1; }
+          test -f dist/main.js || { echo "dist/main.js not found"; exit 1; }
+
+      - name: Extract Version
+        id: version
+        run: |
+          VERSION=$(node -e "console.log(require('./plugin.json').version)")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "tag=${GITHUB_REF_NAME}" >> $GITHUB_OUTPUT
+
+      - name: Verify Version Match
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          PLUGIN_VERSION="${{ steps.version.outputs.version }}"
+          if [ "$TAG_VERSION" != "$PLUGIN_VERSION" ]; then
+            echo "Tag version ($TAG_VERSION) does not match plugin.json version ($PLUGIN_VERSION)"
+            exit 1
+          fi
+
+      - name: Generate Release Notes
+        id: notes
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          NOTES=$(node -e "
+            const fs = require('fs');
+            const ch = fs.readFileSync('CHANGELOG.md', 'utf8');
+            const match = ch.match(new RegExp(\`## \\\\[${VERSION}\\\\][\\\\s\\\\S]*?(?=## \\\\[|\\\$)\`));
+            console.log(match ? match[0].trim() : 'See CHANGELOG.md for details.');
+          ")
+          echo "notes<<EOF" >> $GITHUB_OUTPUT
+          echo "$NOTES" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: v${{ steps.version.outputs.version }}
+          body: ${{ steps.notes.outputs.notes }}
+          files: |
+            plugin.zip
+            dist/main.js
+          fail_on_unmatched_files: false
+          draft: false
+          prerelease: false

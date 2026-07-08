@@ -11,7 +11,7 @@ A powerful, open-source developer toolkit plugin for the [Acode editor](https://
 - **20 reusable UI components** — Cards, modals, sheets, toasts, toggles, search, and more
 - **9 plugin registries** — Commands, Settings, Storage, UI, Theme, Services, Actions, Search, Permissions
 - **Error isolation** — One module crash never blocks others; centralized error handling with severity levels
-- **16 developer tools** — JSON formatting, hashing, JWT debugging, regex testing, color conversion, and more
+- **16 developer tools** — JSON formatting, hashing, JWT decoding, regex testing, color conversion, and more (actively expanding)
 
 ## Installation
 
@@ -35,7 +35,7 @@ A powerful, open-source developer toolkit plugin for the [Acode editor](https://
 ### Setup
 
 ```bash
-git clone https://github.com/anomalyco/acode-devtoolkit.git
+git clone https://github.com/Rishav7324/acode-devtoolkit.git
 cd acode-devtoolkit
 npm install
 ```
@@ -59,8 +59,11 @@ Output will be in `dist/` and packaged as `plugin.zip`.
 ### Quality Commands
 
 ```bash
-npm run lint        # ESLint source code
+npm run lint        # Lint source code
 npm run typecheck   # TypeScript type checking
+npm run validate    # Static analysis & manifest validation
+npm run quality     # Quality gate scoring (min 9/10 per category)
+npm run verify      # Full pre-release check: lint → typecheck → validate → build → quality
 ```
 
 ## Project Structure
@@ -80,12 +83,20 @@ acode-devtoolkit/
 │   ├── styles/         # CSS design system with dark/light tokens
 │   ├── utils/          # Shared utilities (logger, constants, dom, errors)
 │   └── main.js         # Plugin entry point, style injection, theme detection
-├── plugin.json         # Plugin manifest
-├── package.json        # Dependencies and scripts
-├── esbuild.config.mjs  # Build configuration
-├── pack-zip.js         # ZIP packaging script
-├── CONTRIBUTING.md     # Contribution guidelines
-├── DEVELOPER_GUIDE.md  # Module development guide
+├── plugin.json           # Plugin manifest
+├── package.json          # Dependencies and scripts
+├── esbuild.config.mjs    # Build configuration
+├── pack-zip.js           # ZIP packaging script
+├── .eslintrc.cjs         # ESLint configuration
+├── .github/
+│   └── workflows/
+│       ├── ci.yml        # PR/push quality gate
+│       └── release.yml   # Tag-based release automation
+├── scripts/
+│   ├── validate.mjs      # Static analysis & manifest validation
+│   └── quality-gate.mjs  # Quality scoring (min 9/10 per category)
+├── CONTRIBUTING.md       # Contribution guidelines
+├── DEVELOPER_GUIDE.md    # Module development guide
 └── README.md
 ```
 

@@ -28,8 +28,8 @@ export class Kernel {
   constructor() {
     this.phase = PHASE.CREATED;
     this.config = new ConfigManager();
-    this.errorHandler = new ErrorHandler();
     this.eventBus = new EventBus();
+    this.errorHandler = new ErrorHandler(this.eventBus);
     this.container = new ServiceContainer();
     this.observability = new Observability();
     this.accessibility = new Accessibility();

@@ -29,6 +29,7 @@ if (window.acode) {
       if (!baseUrl.endsWith('/')) {
         baseUrl += '/';
       }
+      if (acode.app) acode.app.supported_editor = 'all';
       injectStyles();
       detectTheme();
       await instance.init(baseUrl, $page);

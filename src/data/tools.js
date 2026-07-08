@@ -6,7 +6,7 @@ export const TOOL_CATEGORIES = [
   { id: 'converters', label: 'Converters' },
 ];
 
-const TOOLS = [
+export const TOOLS = [
   {
     id: 'json-formatter',
     icon: '\ue800',
@@ -137,45 +137,8 @@ const TOOLS = [
   },
 ];
 
-let _groupedCache = null;
-
-export function getTools() {
-  return TOOLS;
-}
-
-export function getToolsByCategory() {
-  if (_groupedCache) return _groupedCache;
-
-  const grouped = {};
-  for (const cat of TOOL_CATEGORIES) {
-    grouped[cat.id] = {
-      label: cat.label,
-      tools: TOOLS.filter((t) => t.category === cat.id),
-    };
+export function seedTools(registry) {
+  for (const tool of TOOLS) {
+    registry.register(tool);
   }
-  _groupedCache = grouped;
-  return grouped;
-}
-
-export function invalidateCache() {
-  _groupedCache = null;
-}
-
-export function getFavoriteTools() {
-  return TOOLS.filter((t) => t.favorite);
-}
-
-export function searchTools(query) {
-  const q = query.toLowerCase().trim();
-  if (!q) return [];
-  return TOOLS.filter(
-    (t) =>
-      t.title.toLowerCase().includes(q) ||
-      t.description.toLowerCase().includes(q) ||
-      t.category.toLowerCase().includes(q)
-  );
-}
-
-export function getRecentlyUsed() {
-  return TOOLS.slice(0, 4);
 }

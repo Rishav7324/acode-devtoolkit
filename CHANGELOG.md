@@ -2,6 +2,44 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.8.0] - 2026-07-08
+
+### Added
+
+- **CI/CD Pipeline** (`.github/workflows/ci.yml`) — Automated quality gate on every push and PR: TypeScript check, static analysis, production build, quality scoring, build artifact upload.
+
+- **Release Automation** (`.github/workflows/release.yml`) — Tag-triggered release workflow: validates tag matches `plugin.json` version, runs full quality gate, generates release notes from `CHANGELOG.md`, publishes GitHub Release with `plugin.zip` and `dist/main.js` assets.
+
+- **ESLint Configuration** (`.eslintrc.cjs`) — Comprehensive rules covering: no `var`, no `eval`, no `console.log` (allows `warn`/`error`), no `debugger`, single quotes, semicolons, trailing commas, consistent spacing. Overrides for Node scripts. `acode` global declared read-only.
+
+- **Static Analysis Validator** (`scripts/validate.mjs`) — Pre-release validation covering: `plugin.json` field completeness, semver format, `minVersionCode` ≥ 970, icon ≤ 50KB, `supported_editor` validity, build output existence (dist/main.js, plugin.zip), documentation presence (README, CHANGELOG, LICENSE), source directory structure (all 9 subdirectories), CHANGELOG entry matches version, config file completeness.
+
+- **Quality Gate Scorer** (`scripts/quality-gate.mjs`) — Automated scoring across 5 categories (Architecture, Performance, Security, Maintainability, Documentation). Each category must score ≥ 9/10. Blocks release on failure. Current scores: Architecture 10/10, Performance 9/10, Security 10/10, Maintainability 10/10, Documentation 10/10.
+
+### Changed
+
+- **`package.json`** — Added `engines.node >=18.0.0`. Added `eslint` devDependency. Added scripts: `validate`, `quality`, `prebuild` (runs validate before build), `verify` (full release checklist). Reordered scripts by workflow sequence.
+
+- **`.gitignore`** — Added `coverage`, `.vite`, `*.tgz` patterns for test infrastructure compatibility.
+
+- **`README.md`** — Updated quality commands section with `validate`, `quality`, `verify`. Updated project structure diagram with `.eslintrc.cjs`, `.github/workflows/`, `scripts/` entries.
+
+- **`SettingsPage.js`** — Version string now reads from `plugin.json` dynamically (`plugin.version`) instead of hardcoded string.
+
+## [0.6.2] - 2026-07-08
+
+### Fixed
+
+- **ErrorHandler not wired to EventBus** — Kernel created `ErrorHandler` before `EventBus`, so global uncaught errors and unhandled rejections were captured but never emitted on the event bus. Fix: reordered constructor so `EventBus` is created first, then passed to `ErrorHandler` constructor. (`src/core/Kernel.js:31-32`)
+- **Stale repository references** — All `anomalyco` URLs replaced with `Rishav7324` across `plugin.json`, `README.md`, `package.json`, and `SettingsPage.js` toast message.
+- **SettingsPage version hardcoded** — Version string displayed `0.1.0` instead of `0.6.1`. Updated to match `plugin.json`.
+- **Missing focus indicator for search input** — `.dtk-search-input` had `outline: none` without a visible `:focus` replacement. Added `border-color: var(--dtk-primary)` on focus. (`src/styles/index.css:399-401`)
+
+### Added
+
+- **`supported_editor` declaration** — Added `"supported_editor": "all"` to `plugin.json` and `acode.app.supported_editor = 'all'` runtime declaration in `main.js` to comply with Acode's CodeMirror 6 compatibility requirements.
+- **Global error propagation** — Kernel now passes `EventBus` to `ErrorHandler`, enabling modules and services to subscribe to `system:error` and `system:panic` events for centralized monitoring.
+
 ## [0.6.1] - 2026-07-08
 
 ### Fixed

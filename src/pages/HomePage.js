@@ -3,9 +3,8 @@ import { Header } from '../ui/Header.js';
 import { SearchBox } from '../ui/SearchBox.js';
 import { ToolCard } from '../ui/ToolCard.js';
 import { EmptyState } from '../ui/EmptyState.js';
-import { getToolsByCategory, searchTools, getRecentlyUsed, TOOL_CATEGORIES } from '../data/tools.js';
 
-export function HomePage({ onLaunchTool }) {
+export function HomePage({ toolRegistry, onLaunchTool }) {
   const container = tag('div', { className: 'dtk-container' });
 
   const header = Header({
@@ -23,7 +22,7 @@ export function HomePage({ onLaunchTool }) {
         results.classList.remove('is-visible');
         return;
       }
-      const matches = searchTools(query);
+      const matches = toolRegistry.search(query);
       results.classList.add('is-visible');
 
       if (matches.length === 0) {
@@ -91,9 +90,9 @@ export function HomePage({ onLaunchTool }) {
 
   container.append(quickActions);
 
-  const toolsByCategory = getToolsByCategory();
+  const toolsByCategory = toolRegistry.getByCategory();
 
-  const recentlyUsed = getRecentlyUsed();
+  const recentlyUsed = toolRegistry.getRecentlyUsed();
 
   if (recentlyUsed.length > 0) {
     const section = buildSection(
@@ -111,7 +110,9 @@ export function HomePage({ onLaunchTool }) {
     container.append(section);
   }
 
-  for (const cat of TOOL_CATEGORIES) {
+  const categories = toolRegistry.getCategories();
+
+  for (const cat of categories) {
     const group = toolsByCategory[cat.id];
     if (!group || group.tools.length === 0) continue;
 
@@ -145,7 +146,7 @@ export function HomePage({ onLaunchTool }) {
 
   const footer = tag('div', { className: 'dtk-footer' }, [
     tag('p', { className: 'dtk-footer-text', textContent: 'Acode DevToolkit \u2014 Open source developer utilities' }),
-    tag('p', { className: 'dtk-footer-version', textContent: 'v0.1.0 \u2014 MIT License' }),
+    tag('p', { className: 'dtk-footer-version', textContent: 'v0.7.0 \u2014 MIT License' }),
   ]);
   container.append(footer);
 

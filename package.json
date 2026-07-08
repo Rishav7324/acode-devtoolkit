@@ -7,23 +7,31 @@
   "main": "src/main.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/anomalyco/acode-devtoolkit.git"
+    "url": "https://github.com/Rishav7324/acode-devtoolkit.git"
   },
-  "author": "Acode DevToolkit Contributors",
+  "author": "Rishav Raj",
   "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "dependencies": {
     "html-tag-js": "^2.4.15"
   },
   "devDependencies": {
     "acode-plugin-types": "^1.12.6",
     "esbuild": "^0.25.8",
+    "eslint": "^8.57.0",
     "jszip": "^3.10.1"
   },
   "scripts": {
     "dev": "node esbuild.config.mjs --serve",
     "build": "node esbuild.config.mjs",
     "lint": "eslint src/",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "validate": "node scripts/validate.mjs",
+    "quality": "node scripts/quality-gate.mjs",
+    "prebuild": "node scripts/validate.mjs",
+    "verify": "npm run lint && npm run typecheck && npm run validate && npm run build && npm run quality"
   },
   "browserslist": "cover 100%,not android < 5"
 }

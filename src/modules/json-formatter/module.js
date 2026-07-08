@@ -29,7 +29,7 @@ export default {
   ],
 
   async startup(context) {
-    const { services, toolLauncher } = context;
+    const { services, toolRegistry } = context;
 
     const launch = () => {
       showJsonFormatter({
@@ -38,9 +38,15 @@ export default {
       });
     };
 
-    if (toolLauncher && typeof toolLauncher.register === 'function') {
-      toolLauncher.register('json-formatter', launch);
-    }
+    toolRegistry.register({
+      id: 'json-formatter',
+      icon: '\ue800',
+      title: 'JSON Formatter',
+      description: 'Format, validate, and beautify JSON data with syntax highlighting',
+      category: 'formatting',
+      keywords: ['json', 'format', 'beautify', 'validate', 'minify', 'pretty print'],
+      launch,
+    });
 
     logger.info('JSON Formatter module ready');
   },

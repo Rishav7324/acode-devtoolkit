@@ -401,6 +401,10 @@
   border-color: var(--dtk-primary);
 }
 
+.dtk-search-input:focus {
+  border-color: var(--dtk-primary);
+}
+
 .dtk-search-input::placeholder {
   color: var(--dtk-text-tertiary);
 }
