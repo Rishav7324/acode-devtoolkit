@@ -1,0 +1,35 @@
+{
+  "$schema": "https://acode.app/schema/plugin/v0.1.0.json",
+  "id": "com.devtoolkit.plugin",
+  "name": "Acode DevToolkit",
+  "main": "main.js",
+  "version": "0.6.1",
+  "readme": "readme.md",
+  "icon": "icon.png",
+  "files": [],
+  "minVersionCode": 970,
+  "price": 0,
+  "license": "MIT",
+  "keywords": [
+    "developer",
+    "tools",
+    "devtoolkit",
+    "debug",
+    "utility"
+  ],
+  "changelogs": "changelog.md",
+  "repository": "https://github.com/anomalyco/acode-devtoolkit",
+  "author": {
+    "name": "Acode DevToolkit Contributors",
+    "email": "",
+    "url": "https://github.com/anomalyco/acode-devtoolkit",
+    "github": "anomalyco"
+  },
+  "contributors": [
+    {
+      "name": "Acode DevToolkit Contributors",
+      "role": "Developer",
+      "github": "anomalyco"
+    }
+  ]
+}

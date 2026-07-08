@@ -1,0 +1,29 @@
+{
+  "name": "acode-devtoolkit",
+  "version": "0.2.0",
+  "private": true,
+  "description": "A powerful developer toolkit plugin for Acode editor",
+  "type": "module",
+  "main": "src/main.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anomalyco/acode-devtoolkit.git"
+  },
+  "author": "Acode DevToolkit Contributors",
+  "license": "MIT",
+  "dependencies": {
+    "html-tag-js": "^2.4.15"
+  },
+  "devDependencies": {
+    "acode-plugin-types": "^1.12.6",
+    "esbuild": "^0.25.8",
+    "jszip": "^3.10.1"
+  },
+  "scripts": {
+    "dev": "node esbuild.config.mjs --serve",
+    "build": "node esbuild.config.mjs",
+    "lint": "eslint src/",
+    "typecheck": "tsc --noEmit"
+  },
+  "browserslist": "cover 100%,not android < 5"
+}

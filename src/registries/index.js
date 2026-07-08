@@ -1,0 +1,9 @@
+export { CommandRegistry } from './CommandRegistry.js';
+export { SettingsRegistry } from './SettingsRegistry.js';
+export { StorageRegistry } from './StorageRegistry.js';
+export { UIRegistry } from './UIRegistry.js';
+export { ThemeRegistry } from './ThemeRegistry.js';
+export { ServiceRegistry } from './ServiceRegistry.js';
+export { ActionRegistry } from './ActionRegistry.js';
+export { SearchRegistry } from './SearchRegistry.js';
+export { PermissionRegistry } from './PermissionRegistry.js';

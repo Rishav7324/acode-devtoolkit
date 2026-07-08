@@ -1,0 +1,8 @@
+node_modules
+yarn.lock
+dist
+dist.zip
+plugin.zip
+*.log
+.DS_Store
+Thumbs.db
