@@ -1,7 +1,29 @@
 {
   "name": "acode-devtoolkit",
   "version": "0.1.0",
-  "description": "Open source developer toolkit for Acode",
+  "description": "An open-source developer toolkit plugin for Acode.",
   "author": "Rishav Raj",
-  "license": "MIT"
+  "license": "MIT",
+  "main": "main.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Rishav7324/acode-devtoolkit.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Rishav7324/acode-devtoolkit/issues"
+  },
+  "homepage": "https://github.com/Rishav7324/acode-devtoolkit",
+  "keywords": [
+    "acode",
+    "plugin",
+    "developer",
+    "toolkit",
+    "mobile",
+    "opensource"
+  ],
+  "scripts": {
+    "start": "echo \"Acode DevToolkit\"",
+    "lint": "echo \"No linter configured yet\"",
+    "build": "echo \"Build script will be added in v0.2.0\""
+  }
 }
