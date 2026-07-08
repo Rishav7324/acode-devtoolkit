@@ -17,7 +17,7 @@ export function HomePage({ toolRegistry, onLaunchTool }) {
   const searchBox = SearchBox({
     placeholder: 'Search all tools...',
     onSearch: (query) => {
-      results.innerHTML = '';
+      results.textContent = '';
       if (!query) {
         results.classList.remove('is-visible');
         return;

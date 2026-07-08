@@ -96,6 +96,14 @@ export const TOOLS = [
     favorite: false,
   },
   {
+    id: 'case-converter',
+    icon: '\ue810',
+    title: 'Case Converter',
+    description: 'Convert text between camelCase, snake_case, kebab-case, and more',
+    category: 'converters',
+    favorite: false,
+  },
+  {
     id: 'diff-checker',
     icon: '\ue80b',
     title: 'Diff Checker',

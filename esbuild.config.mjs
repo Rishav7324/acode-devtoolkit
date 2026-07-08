@@ -30,6 +30,7 @@ const buildConfig = {
   color: true,
   outdir: 'dist',
   loader: { '.css': 'text' },
+  drop: ['console'],
   plugins: [zipPlugin],
 };
 

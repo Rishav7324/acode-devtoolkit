@@ -3,17 +3,18 @@ import { Modal } from '../../ui/Modal.js';
 import { Toast } from '../../ui/Toast.js';
 import { logger } from '../../utils/logger.js';
 
-export function showJsonFormatter({ editor, settings, text } = {}) {
-  const indentSize = settings
-    ? settings.get('json-formatter', 'indentSize') || 2
-    : 2;
-  const sortKeys = settings
-    ? settings.get('json-formatter', 'sortKeys') || false
-    : false;
+function isValidBase64(str) {
+  try {
+    return btoa(atob(str)) === str;
+  } catch {
+    return false;
+  }
+}
 
+export function showBase64Tool({ editor, settings, text } = {}) {
   const input = tag('textarea', {
     className: 'dtk-tool-textarea',
-    placeholder: 'Paste JSON here or load from editor...',
+    placeholder: 'Enter text to encode or paste Base64 to decode...',
     spellcheck: 'false',
   });
 
@@ -32,56 +33,58 @@ export function showJsonFormatter({ editor, settings, text } = {}) {
     charCount.textContent = `${input.value.length} chars`;
   };
 
-  function formatJSON() {
+  function encode() {
     try {
-      const raw = input.value.trim();
+      const raw = input.value;
       if (!raw) {
-        Toast({ message: 'No input to format', type: 'warning' });
+        Toast({ message: 'No input to encode', type: 'warning' });
         return;
       }
-      const parsed = JSON.parse(raw);
-      const formatted = JSON.stringify(
-        parsed,
-        sortKeys ? Object.keys(parsed).sort() : null,
-        indentSize
-      );
-      output.textContent = formatted;
-      charCount.textContent = `${formatted.length} chars`;
+      const encoded = btoa(unescape(encodeURIComponent(raw)));
+      output.textContent = encoded;
+      charCount.textContent = `${encoded.length} chars`;
     } catch (e) {
       output.textContent = '';
-      Toast({ message: `Invalid JSON: ${e.message}`, type: 'error' });
+      Toast({ message: `Encode error: ${e.message}`, type: 'error' });
     }
   }
 
-  function minifyJSON() {
+  function decode() {
     try {
       const raw = input.value.trim();
       if (!raw) {
-        Toast({ message: 'No input to minify', type: 'warning' });
+        Toast({ message: 'No input to decode', type: 'warning' });
         return;
       }
-      const parsed = JSON.parse(raw);
-      const minified = JSON.stringify(parsed);
-      output.textContent = minified;
-      charCount.textContent = `${minified.length} chars`;
+      if (!isValidBase64(raw)) {
+        Toast({ message: 'Input is not valid Base64', type: 'error' });
+        return;
+      }
+      const decoded = decodeURIComponent(escape(atob(raw)));
+      output.textContent = decoded;
+      charCount.textContent = `${decoded.length} chars`;
     } catch (e) {
       output.textContent = '';
-      Toast({ message: `Invalid JSON: ${e.message}`, type: 'error' });
+      Toast({ message: `Decode error: ${e.message}`, type: 'error' });
     }
   }
 
-  function validateJSON() {
-    try {
-      const raw = input.value.trim();
-      if (!raw) {
-        Toast({ message: 'No input to validate', type: 'warning' });
-        return;
-      }
-      JSON.parse(raw);
-      Toast({ message: 'Valid JSON', type: 'success' });
-    } catch (e) {
-      Toast({ message: `Invalid JSON: ${e.message}`, type: 'error' });
+  function swapInputOutput() {
+    const result = output.textContent;
+    if (!result) {
+      Toast({ message: 'No output to swap', type: 'warning' });
+      return;
     }
+    input.value = result;
+    output.textContent = '';
+    charCount.textContent = `${result.length} chars`;
+  }
+
+  function clearAll() {
+    input.value = '';
+    output.textContent = '';
+    charCount.textContent = '0 chars';
+    Toast({ message: 'Cleared', type: 'info' });
   }
 
   function loadFromEditor() {
@@ -132,18 +135,23 @@ export function showJsonFormatter({ editor, settings, text } = {}) {
   const actionBar = tag('div', { className: 'dtk-tool-actions' }, [
     tag('button', {
       className: 'dtk-btn dtk-btn-primary',
-      textContent: 'Format',
-      onclick: formatJSON,
+      textContent: 'Encode \u2192',
+      onclick: encode,
     }),
     tag('button', {
       className: 'dtk-btn dtk-btn-secondary',
-      textContent: 'Minify',
-      onclick: minifyJSON,
+      textContent: '\u2190 Decode',
+      onclick: decode,
     }),
     tag('button', {
-      className: 'dtk-btn dtk-btn-secondary',
-      textContent: 'Validate',
-      onclick: validateJSON,
+      className: 'dtk-btn dtk-btn-sm',
+      textContent: '\u21C4 Swap',
+      onclick: swapInputOutput,
+    }),
+    tag('button', {
+      className: 'dtk-btn dtk-btn-sm',
+      textContent: '\u2716 Clear',
+      onclick: clearAll,
     }),
   ]);
 
@@ -180,7 +188,7 @@ export function showJsonFormatter({ editor, settings, text } = {}) {
   ]);
 
   Modal({
-    title: 'JSON Formatter',
+    title: 'Base64 Encoder / Decoder',
     body,
   });
 }

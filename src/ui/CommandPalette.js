@@ -31,7 +31,7 @@ export function CommandPalette({ toolRegistry, commandRegistry, searchRegistry }
     _selectedIndex = 0;
     _results = [];
     input.value = '';
-    resultsContainer.innerHTML = '';
+    resultsContainer.textContent = '';
     document.body.append(overlay);
     setTimeout(() => input.focus(), 50);
   }
@@ -79,7 +79,7 @@ export function CommandPalette({ toolRegistry, commandRegistry, searchRegistry }
   function render(query) {
     _results = search(query);
     _selectedIndex = 0;
-    resultsContainer.innerHTML = '';
+    resultsContainer.textContent = '';
 
     if (_results.length === 0) {
       resultsContainer.append(tag('div', { className: 'dtk-palette-empty', textContent: 'No results found' }));

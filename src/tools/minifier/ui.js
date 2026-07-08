@@ -3,17 +3,75 @@ import { Modal } from '../../ui/Modal.js';
 import { Toast } from '../../ui/Toast.js';
 import { logger } from '../../utils/logger.js';
 
-export function showJsonFormatter({ editor, settings, text } = {}) {
-  const indentSize = settings
-    ? settings.get('json-formatter', 'indentSize') || 2
-    : 2;
-  const sortKeys = settings
-    ? settings.get('json-formatter', 'sortKeys') || false
-    : false;
+export function minifyJS(code) {
+  return code
+    .replace(/\/\/.*$/gm, '')
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/\s+/g, ' ')
+    .replace(/\s*([{}();,:])\s*/g, '$1')
+    .replace(/;\s*}/g, '}')
+    .trim();
+}
 
+export function minifyCSS(code) {
+  return code
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/\s+/g, ' ')
+    .replace(/\s*([{};,:])\s*/g, '$1')
+    .replace(/;}/g, '}')
+    .trim();
+}
+
+export function minifyHTML(code) {
+  return code
+    .replace(/<!--[\s\S]*?-->/g, '')
+    .replace(/>\s+</g, '><')
+    .replace(/\s{2,}/g, ' ')
+    .replace(/\n\s*/g, '')
+    .trim();
+}
+
+export function formatJS(code) {
+  let indent = 0;
+  return code
+    .replace(/[{}]/g, m => m === '{' ? '{\n' + '  '.repeat(++indent) : '\n' + '  '.repeat(--indent) + '}')
+    .replace(/;/g, ';\n' + '  '.repeat(indent))
+    .replace(/\n\s*\n/g, '\n')
+    .trim();
+}
+
+export function formatCSS(code) {
+  let indent = 0;
+  return code
+    .replace(/{/g, ' {\n' + '  '.repeat(++indent))
+    .replace(/}/g, '\n' + '  '.repeat(--indent) + '}')
+    .replace(/;/g, ';\n' + '  '.repeat(indent))
+    .replace(/:\s*/g, ': ')
+    .replace(/\n\s*\n/g, '\n')
+    .trim();
+}
+
+export function formatHTML(code) {
+  let indent = 0;
+  return code
+    .replace(/>\s*</g, '>\n<')
+    .replace(/<\/(\w+)/g, (m) => {
+      indent = Math.max(0, indent - 1);
+      return '\n' + '  '.repeat(indent) + '</' + m.slice(2);
+    })
+    .replace(/<(\w[^>]*)>/g, (m) => {
+      const r = '\n' + '  '.repeat(indent) + '<' + m.slice(1);
+      if (!m.endsWith('/>')) indent++;
+      return r;
+    })
+    .replace(/\n\s*\n/g, '\n')
+    .trim();
+}
+
+export function showMinifier({ editor, settings, text } = {}) {
   const input = tag('textarea', {
     className: 'dtk-tool-textarea',
-    placeholder: 'Paste JSON here or load from editor...',
+    placeholder: 'Paste JavaScript, CSS, or HTML here...',
     spellcheck: 'false',
   });
 
@@ -32,55 +90,56 @@ export function showJsonFormatter({ editor, settings, text } = {}) {
     charCount.textContent = `${input.value.length} chars`;
   };
 
-  function formatJSON() {
-    try {
-      const raw = input.value.trim();
-      if (!raw) {
-        Toast({ message: 'No input to format', type: 'warning' });
-        return;
-      }
-      const parsed = JSON.parse(raw);
-      const formatted = JSON.stringify(
-        parsed,
-        sortKeys ? Object.keys(parsed).sort() : null,
-        indentSize
-      );
-      output.textContent = formatted;
-      charCount.textContent = `${formatted.length} chars`;
-    } catch (e) {
-      output.textContent = '';
-      Toast({ message: `Invalid JSON: ${e.message}`, type: 'error' });
-    }
+  function detectType(code) {
+    const trimmed = code.trim();
+    if (/^[\s\S]*\{[\s\S]*\}$/.test(trimmed) && /[#.]?\w+\s*\{/.test(trimmed)) return 'css';
+    if (/^<!DOCTYPE|^<html|^<[a-z]/i.test(trimmed)) return 'html';
+    return 'js';
   }
 
-  function minifyJSON() {
+  function minify() {
     try {
       const raw = input.value.trim();
       if (!raw) {
         Toast({ message: 'No input to minify', type: 'warning' });
         return;
       }
-      const parsed = JSON.parse(raw);
-      const minified = JSON.stringify(parsed);
-      output.textContent = minified;
-      charCount.textContent = `${minified.length} chars`;
+      const type = settings ? settings.get('minifier', 'type') : null;
+      const lang = type || detectType(raw);
+      let result;
+      switch (lang) {
+        case 'css': result = minifyCSS(raw); break;
+        case 'html': result = minifyHTML(raw); break;
+        default: result = minifyJS(raw); break;
+      }
+      output.textContent = result;
+      const saved = raw.length - result.length;
+      charCount.textContent = `${result.length} chars (saved ${saved})`;
     } catch (e) {
       output.textContent = '';
-      Toast({ message: `Invalid JSON: ${e.message}`, type: 'error' });
+      Toast({ message: `Minify error: ${e.message}`, type: 'error' });
     }
   }
 
-  function validateJSON() {
+  function formatCode() {
     try {
       const raw = input.value.trim();
       if (!raw) {
-        Toast({ message: 'No input to validate', type: 'warning' });
+        Toast({ message: 'No input to format', type: 'warning' });
         return;
       }
-      JSON.parse(raw);
-      Toast({ message: 'Valid JSON', type: 'success' });
+      const lang = detectType(raw);
+      let result;
+      switch (lang) {
+        case 'css': result = formatCSS(raw); break;
+        case 'html': result = formatHTML(raw); break;
+        default: result = formatJS(raw); break;
+      }
+      output.textContent = result;
+      charCount.textContent = `${result.length} chars`;
     } catch (e) {
-      Toast({ message: `Invalid JSON: ${e.message}`, type: 'error' });
+      output.textContent = '';
+      Toast({ message: `Format error: ${e.message}`, type: 'error' });
     }
   }
 
@@ -96,9 +155,7 @@ export function showJsonFormatter({ editor, settings, text } = {}) {
     }
     input.value = content;
     charCount.textContent = `${content.length} chars`;
-    if (output.textContent) {
-      output.textContent = '';
-    }
+    if (output.textContent) output.textContent = '';
     Toast({ message: 'Loaded from editor', type: 'info' });
   }
 
@@ -132,18 +189,13 @@ export function showJsonFormatter({ editor, settings, text } = {}) {
   const actionBar = tag('div', { className: 'dtk-tool-actions' }, [
     tag('button', {
       className: 'dtk-btn dtk-btn-primary',
-      textContent: 'Format',
-      onclick: formatJSON,
-    }),
-    tag('button', {
-      className: 'dtk-btn dtk-btn-secondary',
       textContent: 'Minify',
-      onclick: minifyJSON,
+      onclick: minify,
     }),
     tag('button', {
       className: 'dtk-btn dtk-btn-secondary',
-      textContent: 'Validate',
-      onclick: validateJSON,
+      textContent: 'Format',
+      onclick: formatCode,
     }),
   ]);
 
@@ -180,7 +232,7 @@ export function showJsonFormatter({ editor, settings, text } = {}) {
   ]);
 
   Modal({
-    title: 'JSON Formatter',
+    title: 'Code Minifier',
     body,
   });
 }

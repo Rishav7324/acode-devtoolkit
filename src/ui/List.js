@@ -4,7 +4,7 @@ export function List({ items, emptyMessage }) {
   const root = tag('div', { className: 'dtk-list' });
 
   function render(data) {
-    root.innerHTML = '';
+    root.textContent = '';
     if (!data || data.length === 0) {
       root.append(tag('p', {
         className: 'dtk-list-empty',

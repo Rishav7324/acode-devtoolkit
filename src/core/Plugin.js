@@ -17,7 +17,12 @@ import {
 } from '../registries/index.js';
 import { TOOL_CATEGORIES, seedTools } from '../data/tools.js';
 import { moduleDescriptors } from '../modules/index.js';
-import { COMMAND_PREFIX } from '../utils/constants.js';
+import { COMMAND_PREFIX, SIDEBAR_APP_ID } from '../utils/constants.js';
+import { SidebarApp } from '../ui/SidebarApp.js';
+import { createSelectionService } from '../services/SelectionService.js';
+import { createEditorBridge } from '../services/EditorBridge.js';
+import { KeyboardShortcutRegistry } from '../services/KeyboardShortcutRegistry.js';
+import { ToolPicker } from '../ui/ToolPicker.js';
 import { logger } from '../utils/logger.js';
 
 export class Plugin {
@@ -28,6 +33,10 @@ export class Plugin {
     this.errorHandler = this.kernel.errorHandler;
     this.config = this.kernel.config;
     this._registries = this._createRegistries();
+    this._sidebar = null;
+    this._shortcuts = new KeyboardShortcutRegistry();
+    this._selectionService = null;
+    this._editorBridge = null;
     this._initialized = false;
   }
 
@@ -61,7 +70,11 @@ export class Plugin {
 
     this._registerServices();
     this._registerCoreCommand();
+    this._initEditorBridge();
+    this._initSelectionService();
     await this._loadModules();
+    this._registerSidebar();
+    this._registerSelectionCommand();
 
     this._initialized = true;
     logger.info('Plugin initialized');
@@ -85,6 +98,53 @@ export class Plugin {
         }
       },
     });
+  }
+
+  _registerSidebar() {
+    this._sidebar = new SidebarApp(
+      this.baseUrl + 'icon.png',
+      SIDEBAR_APP_ID,
+      'DevToolkit'
+    );
+    this._sidebar.register(
+      null,
+      () => {
+        if (this.$page) {
+          this.$page.show();
+        }
+      }
+    );
+    logger.debug('Sidebar app registered');
+  }
+
+  _initEditorBridge() {
+    const editorService = this.kernel.container.get('editor');
+    this._editorBridge = createEditorBridge(editorService);
+    logger.debug('Editor bridge ready');
+  }
+
+  _initSelectionService() {
+    this._selectionService = createSelectionService({
+      toolRegistry: this._registries.tools,
+      editorBridge: this._editorBridge,
+    });
+    logger.debug('Selection service ready');
+  }
+
+  _registerSelectionCommand() {
+    const commands = this.kernel.container.get('commands');
+    commands.add({
+      name: `${COMMAND_PREFIX}.send-to-tool`,
+      description: 'Send editor selection to DevToolkit tool',
+      exec: () => {
+        ToolPicker({
+          toolRegistry: this._registries.tools,
+          selectionService: this._selectionService,
+          editorBridge: this._editorBridge,
+        });
+      },
+    });
+    logger.debug('Selection command registered');
   }
 
   async _loadModules() {
@@ -144,7 +204,18 @@ export class Plugin {
     await this.kernel.stop();
 
     const commands = this.kernel.container.get('commands');
+    commands.remove(`${COMMAND_PREFIX}.send-to-tool`);
     commands.destroy();
+
+    if (this._sidebar) {
+      this._sidebar.unregister();
+      this._sidebar = null;
+    }
+    if (this._shortcuts) {
+      this._shortcuts.clear();
+    }
+    this._selectionService = null;
+    this._editorBridge = null;
 
     this._registries.commands.clear();
     this._registries.settings.clear();

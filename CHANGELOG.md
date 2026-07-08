@@ -2,6 +2,54 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.11.0] - 2026-07-08
+
+### Added
+
+- **Regex Tester** (`src/modules/regex-tester/`, `src/tools/regex-tester/ui.js`) — Third real tool with full lifecycle. Features: real-time regex matching as you type, flag input (g, i, m, s, u, y), match list with index and capture groups, named group support, error handling for invalid patterns. Registers `devtoolkit.regex-tester` command.
+
+- **Case Converter** (`src/modules/case-converter/`, `src/tools/case-converter/ui.js`) — Fourth tool with full lifecycle. Features: 10 case formats (camelCase, PascalCase, snake_case, kebab-case, UPPER CASE, lower case, Title Case, CONSTANT_CASE, dot.case, path/case), instant conversion as you type, dropdown selector, Copy/Insert/Load from Editor. Pure logic exported for testing: `toWords()`, `convertCase()`. Registers `devtoolkit.case-converter` command.
+
+- **Code Minifier** (`src/modules/minifier/`, `src/tools/minifier/ui.js`) — Fifth tool with full lifecycle. Features: Minify and Format JavaScript, CSS, and HTML. Auto-detects language from input content. Size savings displayed (chars saved). All pure functions exported for testing: `minifyJS()`, `minifyCSS()`, `minifyHTML()`, `formatJS()`, `formatCSS()`, `formatHTML()`. Registers `devtoolkit.minifier` command.
+
+- **SelectionService** (`src/services/SelectionService.js`) — Editor selection bridge. Methods: `getSelection()` returns editor content, `sendToTool(toolId, text)` dispatches text to tool launch handler, `getAvailableTools()` lists tools with launch handlers. Error-isolated per tool.
+
+- **KeyboardShortcutRegistry** (`src/services/KeyboardShortcutRegistry.js`) — Shortcut management with Acode command integration. Methods: `add()`, `remove()`, `get()`, `getAll()`, `clear()`. Auto-registers with Acode commands API.
+
+- **Launch timing instrumentation** — All new tool modules wrap their launch handler with `performance.now()` timing, logged via `logger.debug()`.
+
+### Changed
+
+- `src/data/tools.js` — Added `case-converter` seed data entry with icon `\ue810`
+- `src/modules/index.js` — Added 3 new module descriptors (regex-tester, case-converter, minifier) — now exports 6 descriptors
+- `src/core/Plugin.js` — Wires `SelectionService` and `KeyboardShortcutRegistry` during init. Services initialized after module loading. Cleaned up on destroy.
+- `src/tools/case-converter/ui.js` — `toWords()` and `convertCase()` now exported for unit testing
+- `src/tools/minifier/ui.js` — All 6 minify/format functions now exported for unit testing
+- `package.json` — Version bumped to 0.11.0
+
+### Tests
+
+- 110 total tests (was 58) — 52 new tests
+- `tests/tools/CaseConverter.test.js` — 20 tests: toWords edge cases, all 10 case conversions, empty/single word
+- `tests/tools/Minifier.test.js` — 17 tests: minify/format for JS/CSS/HTML, comment removal, whitespace, indentation
+- `tests/services/SelectionService.test.js` — 8 tests: null editor, missing tool, error isolation, tool listing
+- `tests/services/KeyboardShortcutRegistry.test.js` — 7 tests: register/get/remove/clear, missing key/command warnings
+
+## [0.10.0] - 2026-07-08
+
+### Added
+
+- **Sidebar Integration** (`src/core/Plugin.js`) — DevToolkit now registers an Acode sidebar app (`SidebarApp`) during plugin initialization. Tapping the sidebar icon (uses plugin icon) opens the DevToolkit home page. Sidebar is automatically unregistered on plugin destroy.
+
+- **Test Infrastructure** (`vitest.config.mjs`, `tests/`) — Vitest test framework with jsdom environment. 58 tests across 4 suites: EventBus (14), ServiceContainer (16), ToolRegistry (18), Logger (10). Covers all edge cases including: circular dependency detection, priority-ordered event handlers, singleton/transient/scoped lifetimes, wildcard events, search across title/description/keywords, mode switching, cleanup lifecycle. Run with `npm test`.
+
+- **Base64 Encoder/Decoder Tool** (`src/modules/base64/module.js`, `src/tools/base64/ui.js`) — Second real tool with full module lifecycle. Features: Encode (text to Base64), Decode (Base64 to text with validation), Swap (move output to input), Clear, Load from Editor, Copy to Clipboard, Insert at Cursor. Unicode-safe encoding/decoding via `encodeURIComponent`/`decodeURIComponent` round-trip. Registers `devtoolkit.base64` command.
+
+### Changed
+
+- `src/modules/index.js` — Added `base64Descriptor` to module list, now exports 3 descriptors
+- `package.json` — Version bumped to 0.10.0. Added `vitest` devDependency. Added `test` and `test:watch` scripts.
+
 ## [0.9.0] - 2026-07-08
 
 ### Added
