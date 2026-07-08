@@ -1,0 +1,23 @@
+{
+  "id": "com.rishav.devtoolkit",
+  "name": "Acode DevToolkit",
+  "main": "main.js",
+  "version": "0.1.0",
+  "readme": "README.md",
+  "icon": "assets/icon.png",
+  "changelogs": "CHANGELOG.md",
+  "minVersionCode": 290,
+  "price": 0,
+  "license": "MIT",
+  "repository": "https://github.com/Rishav7324/acode-devtoolkit",
+  "keywords": [
+    "developer",
+    "toolkit",
+    "utilities",
+    "acode"
+  ],
+  "author": {
+    "name": "Rishav Raj",
+    "github": "Rishav7324"
+  }
+}
