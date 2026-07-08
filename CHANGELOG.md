@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.9.0] - 2026-07-08
+
+### Added
+
+- **Command Palette** (`src/ui/CommandPalette.js`) — Full-screen overlay for searching and launching tools, commands, and actions via keyboard. Features: real-time fuzzy search across ToolRegistry, CommandRegistry, and SearchRegistry; grouped results (Tools / Commands / Actions); arrow key navigation (Up/Down), Enter to execute, Escape to dismiss; ARIA-compliant with `aria-label` and focus management; visual selection highlight with scroll-into-view; backdrop click to close. Accessible via `devtoolkit.palette` command.
+
+### Changed
+
+- **`src/modules/home/module.js`** — Creates a `CommandPalette` instance during startup, passes all three registries (tools, commands, search). Registers `devtoolkit.palette` command with `exec` function bound to `palette.show()`. Cleans up command registration in `shutdown()`.
+
+- **`src/styles/index.css`** — Added palette styles: `.dtk-palette-overlay` (fixed backdrop), `.dtk-palette-panel` (centered card with scale-in animation), `.dtk-palette-input` (border-bottom focus), `.dtk-palette-group` (section headers), `.dtk-palette-item` (44px touch target, hover/selected state), `.dtk-palette-empty` (no results state).
+
+- **`src/ui/CommandPalette.js`** — Created. 140 lines. Pure function returns `{ show, hide, isVisible }`. No DOM until `show()` called. All query logic encapsulated — no external dependencies beyond `html-tag-js` and `acode.require('commands')`.
+
 ## [0.8.0] - 2026-07-08
 
 ### Added

@@ -1074,3 +1074,114 @@
   color: var(--dtk-text-tertiary);
   font-family: var(--dtk-mono);
 }
+
+.dtk-palette-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: var(--dtk-overlay);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 15vh;
+  animation: dtk-fade-in var(--dtk-duration-fast) var(--dtk-ease);
+}
+
+.dtk-palette-panel {
+  width: 90%;
+  max-width: 520px;
+  max-height: 60vh;
+  background: var(--dtk-surface);
+  border: 1px solid var(--dtk-border);
+  border-radius: var(--dtk-radius-lg);
+  box-shadow: var(--dtk-shadow-lg);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: dtk-scale-in var(--dtk-duration-fast) var(--dtk-ease-out);
+}
+
+.dtk-palette-input {
+  width: 100%;
+  padding: var(--dtk-space-lg);
+  border: none;
+  border-bottom: 1px solid var(--dtk-border);
+  background: transparent;
+  color: var(--dtk-text);
+  font-size: 16px;
+  font-family: var(--dtk-font);
+  outline: none;
+  box-sizing: border-box;
+}
+
+.dtk-palette-input:focus {
+  border-bottom-color: var(--dtk-primary);
+}
+
+.dtk-palette-results {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--dtk-space-xs) 0;
+}
+
+.dtk-palette-group {
+  padding: var(--dtk-space-xs) var(--dtk-space-lg);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--dtk-text-tertiary);
+}
+
+.dtk-palette-item {
+  display: flex;
+  align-items: center;
+  gap: var(--dtk-space-md);
+  padding: var(--dtk-space-sm) var(--dtk-space-lg);
+  cursor: pointer;
+  min-height: 44px;
+}
+
+.dtk-palette-item.is-selected {
+  background: var(--dtk-primary-subtle);
+}
+
+.dtk-palette-item-icon {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.dtk-palette-item-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.dtk-palette-item-title {
+  display: block;
+  color: var(--dtk-text);
+  font-size: 14px;
+  line-height: 1.3;
+}
+
+.dtk-palette-item-desc {
+  display: block;
+  color: var(--dtk-text-tertiary);
+  font-size: 12px;
+  line-height: 1.3;
+  margin-top: 1px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dtk-palette-empty {
+  padding: var(--dtk-space-2xl) var(--dtk-space-lg);
+  text-align: center;
+  color: var(--dtk-text-tertiary);
+  font-size: 14px;
+}
