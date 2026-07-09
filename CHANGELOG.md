@@ -2,6 +2,85 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.13.0] - 2026-07-08
+
+### Added
+
+- **Native Editor Tab** (`src/services/TabManager.js`, `src/ui/DevToolkitTab.js`) — DevToolkit now opens as a native editor/workspace tab using `acode.require('editorFile')` API with `type: 'custom'`. Same UX as Terminal and Welcome tabs. Tab title: 🧩 DevToolkit. Supports open, close, restore, multiple switches, and theme updates.
+
+- **TabManager** — Lifecycle management for the EditorFile tab. Methods: `open({ toolRegistry, selectionService, editorBridge })`, `close()`, `toggle()`, `isOpen` (getter), `file` (getter). Creates tab on first open, reuses existing tab on subsequent opens. Closes on plugin destroy.
+
+- **DevToolkitTab** — Content factory for the editor tab. Renders HomePage with tool list inline. When a tool is launched, shows tool UI inline (no modals). "Back" button returns to home view. Empty state for tools without launch handlers. Cleanup function returned for safe teardown.
+
+- **All 5 tool UIs now support container mode** — `showJsonFormatter`, `showBase64Tool`, `showRegexTester`, `showCaseConverter`, `showMinifier` each accept `{ container }` in their options. When `container` is provided, the tool renders inline into that element and returns a cleanup function. When not provided, falls back to Modal (backward compatible).
+
+- **`ToolRegistry.registerLaunchHandler(id, fn)`** — Register a launch handler for an existing tool by id. If the tool entry doesn't exist, creates it automatically.
+
+- **`ToolRegistry.launch(id, args)` — now forwards args** — The `launch` method accepts a second `args` parameter that is forwarded to the tool's launch handler. Returns the launch handler's result (or `null` if tool not found).
+
+- **`createToolModule` passes `container` through** — The tool factory's launch handler now accepts and forwards `{ editor, settings, container }` to `showFn`. Returns the result for optional cleanup.
+
+### Changed
+
+- `src/core/Plugin.js` — Replaced `SidebarApp` with `TabManager`. `_registerCoreCommand()` now opens the editor tab instead of showing `$page`. `_registerSidebar()` removed. `destroy()` closes the tab and removes the `devtoolkit.open` command. Home module content is still appended to `$page.body` for backward compatibility.
+
+- `src/registries/ToolRegistry.js` — Added `registerLaunchHandler()` method. Updated `launch()` to accept and forward `args` parameter.
+
+- `src/tools/*/ui.js` — All 5 tool UIs accept `container` parameter. When present, renders inline; otherwise uses Modal as before.
+
+- `src/utils/createToolModule.js` — Launch handler forwards `container` to showFn and returns the result.
+
+- `src/modules/json-formatter/module.js` — Launch handler accepts and forwards `{ container }`.
+
+- `src/modules/base64/module.js` — Launch handler accepts and forwards `{ container }`.
+
+### Removed
+
+- **SidebarApp** (`src/ui/SidebarApp.js`) — No longer used. The DevToolkit sidebar icon is replaced by the native editor tab. File kept for reference but Plugin.js no longer imports it.
+
+### Tests
+
+- 134 total tests (was 130) — 4 new tests
+- `tests/core/ToolRegistry.test.js` — 4 new tests: registerLaunchHandler (existing tool), registerLaunchHandler (auto-create), args passthrough, null return for missing tool
+- `tests/services/TabManager.test.js` — 5 tests: instance creation, null state, safe close, toggle behavior
+
+## [0.12.0] - 2026-07-08
+
+### Added
+
+- **EditorBridge** (`src/services/EditorBridge.js`) — Unified editor read/write abstraction. 8 methods: `getContent()`, `setContent(text)`, `getSelection()`, `replaceSelection(text)`, `insertAtCursor(text)`, `getCursorPosition()`, `getLineCount()`, `getFileName()`. Handles single-line and multi-line selections. Error-isolated per method.
+
+- **ToolPicker** (`src/ui/ToolPicker.js`) — Search-filtered tool list modal. Gets selection from EditorBridge, passes as `text` to tool launch handler. Shows "Send to Tool" title when text selected, "Open Tool" otherwise. Empty state, search filtering, and tool launch forwarding integrated.
+
+- **ToolRegistry.getToolsWithLaunch()** — Returns all tools that have a launch handler registered.
+
+- **All tool UIs accept `text` parameter** — json-formatter, base64, regex-tester, case-converter, minifier now accept `{ editor, settings, text }` in their `show*()` functions. When `text` is provided, input textarea is pre-filled.
+
+- `devtoolkit.send-to-tool` command — Registered in Plugin.js via `_registerSelectionCommand()`.
+
+- **Test infrastructure** — `tests/setup.js` for global `html-tag-js` mock. Vitest config updated with `node` environment and `tests/ui/` excluded from default run.
+
+### Changed
+
+- `src/core/Plugin.js` — Added `_initEditorBridge()`, `_initSelectionService()`, `_registerSelectionCommand()`. Wires EditorBridge, ToolPicker, and Acode command. SelectionService refactored to use EditorBridge instead of raw editor.
+
+- `src/services/SelectionService.js` — Refactored: now takes `{ toolRegistry, editorBridge }` instead of `{ editorService, toolRegistry }`. Uses EditorBridge for all editor interactions.
+
+- `src/registries/ToolRegistry.js` — Added `getToolsWithLaunch()` method.
+
+- `src/tools/*/ui.js` — All 5 tool UIs destructure `text` from launch args and pre-fill input.
+
+- `src/styles/index.css` — Added ToolPicker styles: `.dtk-tool-picker-list`, `.dtk-tool-picker-item`, `.dtk-tool-picker-icon`, `.dtk-tool-picker-info`, `.dtk-tool-picker-title`, `.dtk-tool-picker-desc`, `.dtk-tool-picker-empty`.
+
+- `vitest.config.mjs` — Changed environment from `jsdom` to `node` (jsdom broken on current Node v22). Added `setupFiles: ['./tests/setup.js']`. Excluded `tests/ui/` from default run.
+
+### Tests
+
+- 130 total tests (was 110) — 20 new tests
+- `tests/services/EditorBridge.test.js` — 20 tests: all 8 methods, error handling, null/edge cases, multi-line selection
+- `tests/services/SelectionService.test.js` — Updated 8 tests for new EditorBridge-based API
+- `tests/setup.js` — Global mock for `html-tag-js` to prevent window dependency in node environment
+
 ## [0.11.0] - 2026-07-08
 
 ### Added

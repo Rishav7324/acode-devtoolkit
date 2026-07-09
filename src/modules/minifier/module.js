@@ -6,5 +6,7 @@ export default createToolModule({
   icon: '\ue808',
   name: 'Code Minifier',
   description: 'Minify JavaScript, CSS, and HTML for production use',
+  category: 'formatting',
+  keywords: ['minify', 'compress', 'javascript', 'css', 'html'],
   showFn: showMinifier,
 });

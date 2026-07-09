@@ -1,23 +1,47 @@
+import { createTool } from './createTool.js';
 import { logger } from './logger.js';
 
 export function createToolModule(config) {
-  const { id, icon, name, description, showFn, permissions = [] } = config;
+  const { id, icon, name, description, showFn, permissions = [], category } = config;
 
-  return {
+  if (!showFn) {
+    logger.error(`createToolModule: "${id}" missing showFn`);
+    throw new Error(`createToolModule: "${id}" must provide a "showFn" function`);
+  }
+
+  const toolDef = createTool({
     id,
-    version: '1.0.0',
     name,
     description,
-    author: 'DevToolkit Contributors',
-    category: 'tool',
     icon,
+    category: category || 'developer',
+    keywords: config.keywords || [],
+    version: '1.0.0',
+    author: 'DevToolkit Contributors',
     permissions,
+    tags: config.tags || [],
+    experimental: config.experimental || false,
+    hidden: config.hidden || false,
+    show: showFn,
+  });
+
+  return {
+    id: toolDef.id,
+    version: toolDef.version,
+    name: toolDef.name,
+    description: toolDef.description,
+    author: toolDef.author,
+    category: 'tool',
+    icon: toolDef.icon,
+    permissions: toolDef.permissions,
     dependencies: { required: [], optional: [] },
+
+    toolDef,
 
     commands: [
       {
-        name: `devtoolkit.${id}`,
-        description: `Open DevToolkit ${name}`,
+        name: `devtoolkit.${toolDef.id}`,
+        description: `Open DevToolkit ${toolDef.name}`,
       },
     ],
 
@@ -25,41 +49,44 @@ export function createToolModule(config) {
       this._context = context;
       const { toolRegistry, services } = context;
 
-      toolRegistry.register({
-        id,
-        launch: ({ editor, settings } = {}) => {
-          const start = performance.now();
-          showFn({ editor, settings });
-          logger.debug(`${id} launched in ${(performance.now() - start).toFixed(1)}ms`);
-        },
-      });
+      toolRegistry.register(toolDef);
 
       services.commands.add({
-        name: `devtoolkit.${id}`,
-        description: `Open DevToolkit ${name}`,
+        name: `devtoolkit.${toolDef.id}`,
+        description: `Open DevToolkit ${toolDef.name}`,
         exec: () => {
           const editorService = services.editor;
-          const settingsService = services.settings;
-          showFn({
+          const launchResult = toolRegistry.launch(toolDef.id, {
             editor: editorService ? editorService.getEditor() : null,
-            settings: settingsService,
           });
+          if (!launchResult.success) {
+            logger.warn(`Launch failed for "${toolDef.id}": ${launchResult.message}`);
+          }
         },
       });
 
-      logger.info(`${name} module ready`);
+      if (typeof toolDef.initialize === 'function') {
+        await toolDef.initialize({ services, registries: context.registries });
+      }
+
+      logger.info(`${toolDef.name} module ready`);
     },
 
     shutdown() {
+      if (typeof toolDef.dispose === 'function') {
+        toolDef.dispose();
+      }
       if (this._context) {
         const { services } = this._context;
-        services.commands.remove(`devtoolkit.${id}`);
+        services.commands.remove(`devtoolkit.${toolDef.id}`);
       }
       this._context = null;
     },
 
     cleanup() {
-      this._context = null;
+      this.shutdown();
     },
   };
 }
+
+export default createToolModule;

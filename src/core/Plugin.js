@@ -15,12 +15,13 @@ import {
   PermissionRegistry,
   ToolRegistry,
 } from '../registries/index.js';
-import { TOOL_CATEGORIES, seedTools } from '../data/tools.js';
+import { TOOL_CATEGORIES } from '../data/tools.js';
 import { moduleDescriptors } from '../modules/index.js';
-import { COMMAND_PREFIX, SIDEBAR_APP_ID } from '../utils/constants.js';
-import { SidebarApp } from '../ui/SidebarApp.js';
+import { COMMAND_PREFIX } from '../utils/constants.js';
+import { TabManager } from '../services/TabManager.js';
 import { createSelectionService } from '../services/SelectionService.js';
 import { createEditorBridge } from '../services/EditorBridge.js';
+import { createLaunchService } from '../services/LaunchService.js';
 import { KeyboardShortcutRegistry } from '../services/KeyboardShortcutRegistry.js';
 import { ToolPicker } from '../ui/ToolPicker.js';
 import { logger } from '../utils/logger.js';
@@ -33,10 +34,11 @@ export class Plugin {
     this.errorHandler = this.kernel.errorHandler;
     this.config = this.kernel.config;
     this._registries = this._createRegistries();
-    this._sidebar = null;
+    this._tabManager = new TabManager();
     this._shortcuts = new KeyboardShortcutRegistry();
     this._selectionService = null;
     this._editorBridge = null;
+    this._launchService = null;
     this._initialized = false;
   }
 
@@ -61,8 +63,6 @@ export class Plugin {
     this.baseUrl = baseUrl;
     this.$page = $page;
 
-    seedTools(this._registries.tools);
-
     await this.kernel.boot({
       modules: false,
       moduleContext: { moduleDescriptors, registries: this._registries },
@@ -71,9 +71,10 @@ export class Plugin {
     this._registerServices();
     this._registerCoreCommand();
     this._initEditorBridge();
+    this._initLaunchService();
     this._initSelectionService();
     await this._loadModules();
-    this._registerSidebar();
+    this._runStartupValidation();
     this._registerSelectionCommand();
 
     this._initialized = true;
@@ -93,28 +94,13 @@ export class Plugin {
       name: `${COMMAND_PREFIX}.open`,
       description: 'Open DevToolkit',
       exec: () => {
-        if (this.$page) {
-          this.$page.show();
-        }
+        this._tabManager.open({
+          toolRegistry: this._registries.tools,
+          selectionService: this._selectionService,
+          editorBridge: this._editorBridge,
+        });
       },
     });
-  }
-
-  _registerSidebar() {
-    this._sidebar = new SidebarApp(
-      this.baseUrl + 'icon.png',
-      SIDEBAR_APP_ID,
-      'DevToolkit'
-    );
-    this._sidebar.register(
-      null,
-      () => {
-        if (this.$page) {
-          this.$page.show();
-        }
-      }
-    );
-    logger.debug('Sidebar app registered');
   }
 
   _initEditorBridge() {
@@ -123,10 +109,20 @@ export class Plugin {
     logger.debug('Editor bridge ready');
   }
 
+  _initLaunchService() {
+    this._launchService = createLaunchService({
+      toolRegistry: this._registries.tools,
+      editorBridge: this._editorBridge,
+      settingsService: this.kernel.container.get('settings'),
+    });
+    logger.debug('Launch service ready');
+  }
+
   _initSelectionService() {
     this._selectionService = createSelectionService({
       toolRegistry: this._registries.tools,
       editorBridge: this._editorBridge,
+      launchService: this._launchService,
     });
     logger.debug('Selection service ready');
   }
@@ -166,7 +162,13 @@ export class Plugin {
       await mm.load(descriptor);
     }
 
-    const results = await mm.enableAll(moduleContext);
+    let results;
+    try {
+      results = await mm.enableAll(moduleContext);
+    } catch (error) {
+      logger.error('Module enableAll failed:', error);
+      results = [];
+    }
 
     for (const { id } of results) {
       this.kernel.eventBus.emit('module:ready', { id });
@@ -177,6 +179,32 @@ export class Plugin {
     if (homeEl && this.$page) {
       this.$page.body.append(homeEl);
     }
+  }
+
+  _runStartupValidation() {
+    const registry = this._registries.tools;
+    const errors = registry.getValidationErrors();
+
+    if (errors.length > 0) {
+      logger.warn(`ToolRegistry: ${errors.length} validation error(s) found`);
+      for (const { id, errors: errs } of errors) {
+        for (const err of errs) {
+          logger.warn(`  [${id}] ${err}`);
+        }
+      }
+    }
+
+    const allTools = registry.getAll();
+    const toolsWithoutLaunch = allTools.filter(t => typeof t.launch !== 'function');
+    if (toolsWithoutLaunch.length > 0) {
+      logger.warn(`ToolRegistry: ${toolsWithoutLaunch.length} tool(s) missing launch handler:`);
+      for (const t of toolsWithoutLaunch) {
+        logger.warn(`  - ${t.id} (${t.name})`);
+      }
+    }
+
+    const allEnabled = allTools.filter(t => t.enabled);
+    logger.info(`ToolRegistry: ${allEnabled.length}/${allTools.length} tools ready`);
   }
 
   async addModule(descriptor) {
@@ -203,19 +231,26 @@ export class Plugin {
   async destroy() {
     await this.kernel.stop();
 
+    this._tabManager.close();
+
     const commands = this.kernel.container.get('commands');
     commands.remove(`${COMMAND_PREFIX}.send-to-tool`);
+    commands.remove(`${COMMAND_PREFIX}.open`);
     commands.destroy();
 
-    if (this._sidebar) {
-      this._sidebar.unregister();
-      this._sidebar = null;
-    }
     if (this._shortcuts) {
       this._shortcuts.clear();
     }
+
+    for (const tool of this._registries.tools.getAll()) {
+      if (typeof tool.dispose === 'function') {
+        try { tool.dispose(); } catch (e) { logger.warn(`Dispose error for "${tool.id}":`, e); }
+      }
+    }
+
     this._selectionService = null;
     this._editorBridge = null;
+    this._launchService = null;
 
     this._registries.commands.clear();
     this._registries.settings.clear();

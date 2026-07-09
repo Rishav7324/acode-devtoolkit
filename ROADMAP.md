@@ -1,21 +1,21 @@
 # Roadmap
 
-## Current Status: v0.10.0 — Foundation Complete
+## Current Status: v0.13.0 — Native Editor Tab (Critical)
 
-- Module framework with lifecycle (startup/shutdown/cleanup)
-- 9 registries (commands, settings, storage, UI, theme, service, action, search, permission)
-- Tool Registry with search, categories, launch handlers
-- Kernel with DI container, EventBus, error handling
-- 2 tools: JSON Formatter, Base64 Encoder/Decoder
-- Command Palette with keyboard navigation
-- Sidebar integration
-- CI/CD pipeline
-- 58 unit tests (Vitest)
-- Quality gate 9.8/10
+- DevToolkit opens as a native editor tab via `acode.require('editorFile')` API
+- Tab type: `custom` with shadow DOM isolation, same UX as Terminal/Welcome tabs
+- `TabManager` service: open, close, toggle, restore lifecycle
+- `DevToolkitTab` UI: home page with tool search + inline tool rendering (no modals)
+- All 5 tools support dual mode: inline (in tab) and Modal (fallback)
+- `ToolRegistry.launch(id, args)` now forwards arguments to launch handler
+- `ToolRegistry.registerLaunchHandler(id, fn)` added for late-bound launch handlers
+- Removed `SidebarApp` dependency — editor tab is the primary UI
+- 134 unit tests (4 new: registerLaunchHandler, args passthrough, null return, TabManager basics)
+- Bundle: 117KB, quality gate 9.8/10
 
 ---
 
-## Milestone v0.11.0 — Developer Productivity Tools (Medium)
+## Milestone v0.11.0 — Developer Productivity Tools (Medium) ✅
 
 **Theme:** Expand the tool palette with the most-requested mobile dev utilities.
 
@@ -36,7 +36,7 @@
 
 ---
 
-## Milestone v0.12.0 — Editor Integration (Critical)
+## Milestone v0.12.0 — Editor Integration (Critical) ✅
 
 **Theme:** Deepen editor integration — the tools become part of the editing experience.
 
@@ -51,8 +51,9 @@
 
 ### Files
 
-- `src/services/SelectionService.js` — Manages editor selection extraction
-- `src/services/EditorBridge.js` — Unified editor read/write abstraction
+- `src/services/EditorBridge.js` — Unified editor read/write abstraction (8 methods)
+- `src/ui/ToolPicker.js` — Search-filtered tool list with selection-aware launch
+- `src/services/SelectionService.js` — Refactored to use EditorBridge
 
 ---
 

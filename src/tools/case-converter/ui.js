@@ -54,7 +54,7 @@ export function convertCase(input, caseId) {
   }
 }
 
-export function showCaseConverter({ editor, settings, text } = {}) {
+export function showCaseConverter({ editor, settings, text, container } = {}) {
   const input = tag('textarea', {
     className: 'dtk-tool-textarea',
     placeholder: 'Type or paste text to convert...',
@@ -171,8 +171,10 @@ export function showCaseConverter({ editor, settings, text } = {}) {
     statusBar,
   ]);
 
-  Modal({
-    title: 'Case Converter',
-    body,
-  });
+  if (container) {
+    container.append(body);
+    return () => { body.remove(); };
+  } else {
+    Modal({ title: 'Case Converter', body });
+  }
 }

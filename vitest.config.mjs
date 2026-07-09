@@ -2,8 +2,9 @@ import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   test: {
-    environment: 'jsdom',
+    environment: 'node',
     include: ['tests/**/*.test.js'],
+    exclude: ['tests/ui/**'],
     globals: true,
     coverage: {
       include: ['src/**'],
@@ -13,6 +14,7 @@ export default defineConfig({
         'src/index.js',
       ],
     },
-    setupFiles: [],
+    testTimeout: 15000,
+    setupFiles: ['./tests/setup.js'],
   },
 });

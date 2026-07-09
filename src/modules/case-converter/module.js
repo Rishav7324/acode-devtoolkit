@@ -6,5 +6,7 @@ export default createToolModule({
   icon: '\ue810',
   name: 'Case Converter',
   description: 'Convert text between camelCase, snake_case, kebab-case, and more',
+  category: 'converters',
+  keywords: ['camelcase', 'snakecase', 'kebabcase', 'pascalcase', 'text'],
   showFn: showCaseConverter,
 });

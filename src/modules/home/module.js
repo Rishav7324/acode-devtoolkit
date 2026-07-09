@@ -2,6 +2,7 @@ import { HomePage } from '../../pages/HomePage.js';
 import { SettingsPage } from '../../pages/SettingsPage.js';
 import { CommandPalette } from '../../ui/CommandPalette.js';
 import { Toast } from '../../ui/Toast.js';
+import { createLaunchService } from '../../services/LaunchService.js';
 import { COMMAND_PREFIX, PLUGIN_NAME } from '../../utils/constants.js';
 import { logger } from '../../utils/logger.js';
 
@@ -27,6 +28,12 @@ export default {
     this._context = context;
     const { services, registries, toolRegistry } = context;
 
+    const launchService = createLaunchService({
+      toolRegistry,
+      editorBridge: null,
+      settingsService: services.settings || null,
+    });
+
     const palette = CommandPalette({
       toolRegistry,
       commandRegistry: registries.commands,
@@ -41,12 +48,9 @@ export default {
 
     const homeEl = HomePage({
       toolRegistry,
+      launchService,
       onLaunchTool: (tool) => {
-        if (toolRegistry.hasLaunchHandler(tool.id)) {
-          toolRegistry.launch(tool.id);
-        } else {
-          Toast({ message: `${tool.title} \u2014 coming soon`, type: 'info' });
-        }
+        launchService.launch(tool, null);
       },
     });
 

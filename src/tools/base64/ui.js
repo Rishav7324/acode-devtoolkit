@@ -11,7 +11,7 @@ function isValidBase64(str) {
   }
 }
 
-export function showBase64Tool({ editor, settings, text } = {}) {
+export function showBase64Tool({ editor, settings, text, container } = {}) {
   const input = tag('textarea', {
     className: 'dtk-tool-textarea',
     placeholder: 'Enter text to encode or paste Base64 to decode...',
@@ -187,8 +187,10 @@ export function showBase64Tool({ editor, settings, text } = {}) {
     statusBar,
   ]);
 
-  Modal({
-    title: 'Base64 Encoder / Decoder',
-    body,
-  });
+  if (container) {
+    container.append(body);
+    return () => { body.remove(); };
+  } else {
+    Modal({ title: 'Base64 Encoder / Decoder', body });
+  }
 }

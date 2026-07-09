@@ -1,15 +1,28 @@
+import { createTool } from '../../utils/createTool.js';
 import { showJsonFormatter } from '../../tools/json-formatter/ui.js';
 import { COMMAND_PREFIX } from '../../utils/constants.js';
 import { logger } from '../../utils/logger.js';
 
-export default {
+const toolDef = createTool({
   id: 'json-formatter',
-  version: '1.0.0',
+  icon: '\ue800',
   name: 'JSON Formatter',
   description: 'Format, validate, and beautify JSON data with syntax highlighting',
-  author: 'DevToolkit Contributors',
   category: 'formatting',
-  icon: '\ue800',
+  keywords: ['json', 'format', 'beautify', 'validate', 'minify', 'pretty print'],
+  version: '1.0.0',
+  author: 'DevToolkit Contributors',
+  show: showJsonFormatter,
+});
+
+export default {
+  id: toolDef.id,
+  version: toolDef.version,
+  name: toolDef.name,
+  description: toolDef.description,
+  author: toolDef.author,
+  category: 'formatting',
+  icon: toolDef.icon,
   permissions: [],
   dependencies: { required: [], optional: [] },
 
@@ -20,42 +33,32 @@ export default {
     },
   ],
 
-  searchEntries: [
-    {
-      keywords: ['json', 'format', 'beautify', 'validate', 'minify', 'pretty print'],
-      priority: 10,
-      category: 'tools',
-    },
-  ],
-
   async startup(context) {
-    const { services, toolRegistry } = context;
+    const { toolRegistry, services } = context;
 
-    const launch = () => {
-      showJsonFormatter({
-        editor: services.editor,
-        settings: services.settings,
-      });
-    };
+    toolRegistry.register(toolDef);
 
-    toolRegistry.register({
-      id: 'json-formatter',
-      icon: '\ue800',
-      title: 'JSON Formatter',
-      description: 'Format, validate, and beautify JSON data with syntax highlighting',
-      category: 'formatting',
-      keywords: ['json', 'format', 'beautify', 'validate', 'minify', 'pretty print'],
-      launch,
+    services.commands.add({
+      name: `${COMMAND_PREFIX}.json-formatter`,
+      description: 'Open JSON Formatter',
+      exec: () => {
+        const editorService = services.editor;
+        toolRegistry.launch(toolDef.id, {
+          editor: editorService ? editorService.getEditor() : null,
+        });
+      },
     });
 
     logger.info('JSON Formatter module ready');
   },
 
   shutdown() {
-    logger.info('JSON Formatter module shutdown');
+    if (typeof toolDef.dispose === 'function') {
+      toolDef.dispose();
+    }
   },
 
   cleanup() {
-    logger.info('JSON Formatter module cleanup');
+    this.shutdown();
   },
 };

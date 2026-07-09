@@ -2,7 +2,7 @@ import tag from 'html-tag-js';
 import { Modal } from '../../ui/Modal.js';
 import { Toast } from '../../ui/Toast.js';
 
-export function showRegexTester({ editor, settings, text } = {}) {
+export function showRegexTester({ editor, settings, text, container } = {}) {
   const patternInput = tag('input', {
     className: 'dtk-tool-input',
     placeholder: 'Enter regex pattern (e.g. \\d+)',
@@ -149,8 +149,10 @@ export function showRegexTester({ editor, settings, text } = {}) {
     statusBar,
   ]);
 
-  Modal({
-    title: 'Regex Tester',
-    body,
-  });
+  if (container) {
+    container.append(body);
+    return () => { body.remove(); };
+  } else {
+    Modal({ title: 'Regex Tester', body });
+  }
 }

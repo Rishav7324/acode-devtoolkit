@@ -68,7 +68,7 @@ export function formatHTML(code) {
     .trim();
 }
 
-export function showMinifier({ editor, settings, text } = {}) {
+export function showMinifier({ editor, settings, text, container } = {}) {
   const input = tag('textarea', {
     className: 'dtk-tool-textarea',
     placeholder: 'Paste JavaScript, CSS, or HTML here...',
@@ -231,8 +231,10 @@ export function showMinifier({ editor, settings, text } = {}) {
     statusBar,
   ]);
 
-  Modal({
-    title: 'Code Minifier',
-    body,
-  });
+  if (container) {
+    container.append(body);
+    return () => { body.remove(); };
+  } else {
+    Modal({ title: 'Code Minifier', body });
+  }
 }

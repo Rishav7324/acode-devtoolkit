@@ -1,6 +1,6 @@
 import { logger } from '../utils/logger.js';
 
-export function createSelectionService({ toolRegistry, editorBridge }) {
+export function createSelectionService({ toolRegistry, editorBridge, launchService }) {
   function getSelection() {
     if (!editorBridge) return null;
     return editorBridge.getSelection();
@@ -12,24 +12,17 @@ export function createSelectionService({ toolRegistry, editorBridge }) {
   }
 
   function sendToTool(toolId, text) {
-    const tool = toolRegistry.get(toolId);
-    if (!tool) {
-      logger.warn(`SelectionService: tool "${toolId}" not found`);
+    if (!launchService) {
+      logger.warn('SelectionService: no launch service available');
       return false;
     }
-    if (typeof tool.launch === 'function') {
-      const editor = editorBridge
-        ? { getContent: () => editorBridge.getContent(), insertAtCursor: (t) => editorBridge.insertAtCursor(t) }
-        : null;
-      tool.launch({ editor, text, settings: null });
-      return true;
-    }
-    logger.warn(`SelectionService: tool "${toolId}" has no launch handler`);
-    return false;
+    return launchService.sendToTool(toolId, text);
   }
 
   function getAvailableTools() {
-    return toolRegistry.getAll().filter(t => typeof t.launch === 'function');
+    return launchService
+      ? launchService.getAvailableTools()
+      : [];
   }
 
   return {

@@ -45,7 +45,7 @@ export function HomePage({ toolRegistry, onLaunchTool }) {
         }, [
           tag('div', { className: 'dtk-search-result-icon', textContent: tool.icon }),
           tag('div', { className: 'dtk-search-result-info' }, [
-            tag('p', { className: 'dtk-search-result-title', textContent: tool.title }),
+            tag('p', { className: 'dtk-search-result-title', textContent: tool.name }),
             tag('p', { className: 'dtk-search-result-category', textContent: tool.category }),
           ]),
         ]);

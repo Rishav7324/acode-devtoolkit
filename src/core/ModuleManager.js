@@ -111,10 +111,14 @@ export class ModuleManager {
       this._emit('module:error', { id, error: new ModuleError(id, 'Startup failed') });
       return false;
     }
-
     record._startupResult = result;
 
-    this._registerModuleAssets(record, context);
+    try {
+      this._registerModuleAssets(record, context);
+    } catch (error) {
+      logger.error(`ModuleManager: failed to register assets for "${id}":`, error);
+    }
+
     this._emit('module:enabled', { id: record.id });
     logger.info(`ModuleManager: enabled "${id}"`);
     return true;
@@ -142,7 +146,11 @@ export class ModuleManager {
       }
     });
 
-    this._unregisterModuleAssets(record);
+    try {
+      this._unregisterModuleAssets(record);
+    } catch (error) {
+      logger.error(`ModuleManager: failed to unregister assets for "${id}":`, error);
+    }
     record.state = STATE.DISABLED;
     this._emit('module:disabled', { id: record.id });
     logger.info(`ModuleManager: disabled "${id}"`);
@@ -265,45 +273,49 @@ export class ModuleManager {
   }
 
   _registerModuleAssets(record, context) {
+    if (!this._registries) return;
+
     const { id, descriptor } = record;
     const reg = this._registries;
 
     if (descriptor.commands && descriptor.commands.length > 0) {
       for (const cmd of descriptor.commands) {
-        reg.commands.register(id, cmd);
+        reg.commands?.register(id, cmd);
       }
     }
 
     if (descriptor.settings && descriptor.settings.length > 0) {
-      reg.settings.register(id, descriptor.settings);
+      reg.settings?.register(id, descriptor.settings);
     }
 
     if (descriptor.searchEntries && descriptor.searchEntries.length > 0) {
-      reg.search.register(id, descriptor.searchEntries);
+      reg.search?.register(id, descriptor.searchEntries);
     }
 
     if (descriptor.actions && descriptor.actions.length > 0) {
-      reg.actions.register(id, descriptor.actions);
+      reg.actions?.register(id, descriptor.actions);
     }
 
     if (descriptor.permissions && descriptor.permissions.length > 0) {
-      reg.permissions.register(id, descriptor.permissions);
+      reg.permissions?.register(id, descriptor.permissions);
     }
   }
 
   _unregisterModuleAssets(record) {
+    if (!this._registries) return;
+
     const { id } = record;
     const reg = this._registries;
 
-    reg.commands.unregisterByModule(id);
-    reg.settings.unregisterByModule(id);
-    reg.search.unregisterByModule(id);
-    reg.actions.unregisterByModule(id);
-    reg.permissions.unregisterByModule(id);
-    reg.storage.unregisterByModule(id);
-    reg.ui.unregisterByModule(id);
-    reg.theme.unregisterByModule(id);
-    reg.services.unregisterByModule(id);
+    reg.commands?.unregisterByModule(id);
+    reg.settings?.unregisterByModule(id);
+    reg.search?.unregisterByModule(id);
+    reg.actions?.unregisterByModule(id);
+    reg.permissions?.unregisterByModule(id);
+    reg.storage?.unregisterByModule(id);
+    reg.ui?.unregisterByModule(id);
+    reg.theme?.unregisterByModule(id);
+    reg.services?.unregisterByModule(id);
   }
 
   _emit(event, data) {

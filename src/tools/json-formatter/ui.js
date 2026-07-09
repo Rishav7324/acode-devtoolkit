@@ -3,7 +3,7 @@ import { Modal } from '../../ui/Modal.js';
 import { Toast } from '../../ui/Toast.js';
 import { logger } from '../../utils/logger.js';
 
-export function showJsonFormatter({ editor, settings, text } = {}) {
+export function showJsonFormatter({ editor, settings, text, container } = {}) {
   const indentSize = settings
     ? settings.get('json-formatter', 'indentSize') || 2
     : 2;
@@ -179,8 +179,10 @@ export function showJsonFormatter({ editor, settings, text } = {}) {
     statusBar,
   ]);
 
-  Modal({
-    title: 'JSON Formatter',
-    body,
-  });
+  if (container) {
+    container.append(body);
+    return () => { body.remove(); };
+  } else {
+    Modal({ title: 'JSON Formatter', body });
+  }
 }
